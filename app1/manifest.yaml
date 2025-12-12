@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: app1
+  namespace: roboshop
+  labels:
+    app: app1
+    project: roboshop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app1
+      project: roboshop
+  template:
+    metadata:
+      labels:
+        app: app1
+        project: roboshop
+    spec:
+      containers:
+      - name: app1
+        image: sathishdevops38/app1:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app1
+  namespace: roboshop
+spec:
+  selector:
+    app: app1
+    project: roboshop
+  ports:
+  - port: 80
+    targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app1
+  annotations:
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:160885265516:certificate/a1f7483d-ee32-446c-a9b9-e7fdcca18ff6
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/tags: Environment=dev,Project=roboshop
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/group.name: roboshop
+spec:
+  ingressClassName: alb
+  rules:
+  - host: "app1.daws38sat.fun"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: app1
+            port:
+              number: 80       
+  
